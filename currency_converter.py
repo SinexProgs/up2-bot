@@ -16,6 +16,7 @@ def convert_currency(in_currency, out_currency, value):
 def get_converted_currency_message(in_currency, out_currency, value):
     try:
         converted = convert_currency(in_currency, out_currency, value)
-        return f"{value} {in_currency} = {converted:0.2f} {out_currency}"
+        return f"{value} {in_currency} = {converted:0.2f} {out_currency}\n\n" \
+               "Чтобы сконвертировать ещё одну сумму введите её по тому же формату."
     except:
-        return "Не удалось сконвертировать валюту!"
+        return "Не удалось сконвертировать валюту! Попробуйте ещё раз."

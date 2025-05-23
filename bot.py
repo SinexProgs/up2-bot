@@ -3,6 +3,8 @@ from bot_states import BotStates, BotStateNames
 from telebot import custom_filters, types, StateMemoryStorage
 from currency_converter import get_converted_currency_message
 from weather import get_weather_message
+from password_generator import get_password_generator_message
+
 
 token = "7628109233:AAHJm70FOsEUpu6RKRfUj_st2PzG8WgFDAk"
 state_storage = StateMemoryStorage()
@@ -43,6 +45,13 @@ def enter_weather_state(message):
                      reply_markup=cancel_keyboard)
 
 
+def enter_password_generator_state(message):
+    set_bot_state(message, BotStates.password_generator)
+    bot.send_message(message.chat.id,
+                     text="Введите длину пароля.",
+                     reply_markup=cancel_keyboard)
+
+
 def try_cancel_message(message):
     if message.text == "Вернуться в меню":
         enter_menu_state(message)
@@ -60,7 +69,7 @@ def handle_menu_message(message):
     match BotStateNames(message.text):
         case BotStateNames.currency_converter: enter_currency_converter_state(message)
         case BotStateNames.weather: enter_weather_state(message)
-        case BotStateNames.password_generator: enter_currency_converter_state(message)
+        case BotStateNames.password_generator: enter_password_generator_state(message)
         case BotStateNames.game_guess_number: enter_currency_converter_state(message)
 
 
@@ -81,7 +90,7 @@ def handle_currency_converter_message(message):
         args[0] = float(args[0])
     except:
         bot.send_message(message.chat.id,
-                         text="Сумма не является числом!",
+                         text="Сумма не является числом! Введите другую сумму.",
                          reply_markup=cancel_keyboard)
     else:
         bot.send_message(message.chat.id,
@@ -98,6 +107,23 @@ def handle_weather_message(message):
                      text=get_weather_message(message.text),
                      parse_mode="HTML",
                      reply_markup=cancel_keyboard)
+
+
+@bot.message_handler(state=BotStates.password_generator, func=lambda message: True)
+def handle_password_generator_message(message):
+    if try_cancel_message(message): return
+
+    try:
+        length = int(message.text)
+    except:
+        bot.send_message(message.chat.id,
+                         text="Введённая длина не является числом! Попробуйте ввести другую.",
+                         reply_markup=cancel_keyboard)
+    else:
+        bot.send_message(message.chat.id,
+                         text=get_password_generator_message(length),
+                         parse_mode="HTML",
+                         reply_markup=cancel_keyboard)
 
 
 bot.add_custom_filter(custom_filters.StateFilter(bot))

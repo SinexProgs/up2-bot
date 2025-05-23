@@ -26,7 +26,7 @@ def get_weather_message(city):
     data = json.loads(request.text)
 
     if len(data) == 2 and data['cod'] == 404:
-        return "Такого города не существует!"
+        return "Такого города не существует! Введите другой город."
 
     try:
         tz = datetime.timezone(datetime.timedelta(seconds=data['timezone']))
@@ -61,6 +61,8 @@ def get_weather_message(city):
         else:
             lines.append("<b>Без осадков</b>")
 
+        lines.append("\nЧтобы увидеть погоду в другом городе введите его название.")
+
         return '\n'.join(lines)
     except:
-        return "Произошла ошибка!"
+        return "Произошла ошибка! Попробуйте ещё раз."
