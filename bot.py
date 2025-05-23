@@ -1,8 +1,8 @@
 import telebot
 from bot_states import BotStates, BotStateNames
 from telebot import custom_filters, types, StateMemoryStorage
-from currency_converter import convert_currency
-
+from currency_converter import get_converted_currency_message
+from weather import get_weather_message
 
 token = "7628109233:AAHJm70FOsEUpu6RKRfUj_st2PzG8WgFDAk"
 state_storage = StateMemoryStorage()
@@ -36,6 +36,20 @@ def enter_currency_converter_state(message):
                      reply_markup=cancel_keyboard)
 
 
+def enter_weather_state(message):
+    set_bot_state(message, BotStates.weather)
+    bot.send_message(message.chat.id,
+                     text="Введите город, в котором хотите увидеть погоду.",
+                     reply_markup=cancel_keyboard)
+
+
+def try_cancel_message(message):
+    if message.text == "Вернуться в меню":
+        enter_menu_state(message)
+        return True
+    return False
+
+
 @bot.message_handler(commands=['start'])
 def send_welcome_msg(message):
     enter_menu_state(message)
@@ -45,13 +59,15 @@ def send_welcome_msg(message):
 def handle_menu_message(message):
     match BotStateNames(message.text):
         case BotStateNames.currency_converter: enter_currency_converter_state(message)
-        case BotStateNames.weather: enter_currency_converter_state(message)
+        case BotStateNames.weather: enter_weather_state(message)
         case BotStateNames.password_generator: enter_currency_converter_state(message)
         case BotStateNames.game_guess_number: enter_currency_converter_state(message)
 
 
 @bot.message_handler(state=BotStates.currency_converter, func=lambda message: True)
 def handle_currency_converter_message(message):
+    if try_cancel_message(message): return
+
     args = message.text.split()
     if len(args) != 3:
         bot.send_message(message.chat.id,
@@ -60,25 +76,29 @@ def handle_currency_converter_message(message):
                          parse_mode="HTML",
                          reply_markup=cancel_keyboard)
         return
-    args[0] = float(args[0])
+
     try:
-        converted = convert_currency(args[1], args[2], args[0])
-        bot.send_message(message.chat.id,
-                         text=f"{args[0]} {args[1]} = {converted} {args[2]:0.2f}",
-                         parse_mode="HTML",
-                         reply_markup=cancel_keyboard)
+        args[0] = float(args[0])
     except:
         bot.send_message(message.chat.id,
-                         text="Не удалось сконвертировать валюту!",
+                         text="Сумма не является числом!",
+                         reply_markup=cancel_keyboard)
+    else:
+        bot.send_message(message.chat.id,
+                         text=get_converted_currency_message(args[1], args[2], args[0]),
                          parse_mode="HTML",
                          reply_markup=cancel_keyboard)
 
 
-@bot.message_handler(state="*", func=lambda message: True)
-def handle_cancel_message(message):
-    if message.text == "Вернуться в меню":
-        enter_menu_state(message)
+@bot.message_handler(state=BotStates.weather, func=lambda message: True)
+def handle_weather_message(message):
+    if try_cancel_message(message): return
+
+    bot.send_message(message.chat.id,
+                     text=get_weather_message(message.text),
+                     parse_mode="HTML",
+                     reply_markup=cancel_keyboard)
 
 
 bot.add_custom_filter(custom_filters.StateFilter(bot))
-bot.polling(non_stop=True, interval=0)
+bot.infinity_polling()

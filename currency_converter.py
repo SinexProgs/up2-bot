@@ -11,3 +11,11 @@ def convert_currency(in_currency, out_currency, value):
 
     currency_value = json.loads(response)[in_currency][out_currency]
     return currency_value * value
+
+
+def get_converted_currency_message(in_currency, out_currency, value):
+    try:
+        converted = convert_currency(in_currency, out_currency, value)
+        return f"{value} {in_currency} = {converted:0.2f} {out_currency}"
+    except:
+        return "Не удалось сконвертировать валюту!"
