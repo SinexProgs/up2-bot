@@ -1,6 +1,7 @@
 import datetime
 import json
 import requests
+from bot import *
 
 
 api = 'aef454789ee3d0bad82fee47b0613904'
@@ -66,3 +67,10 @@ def get_weather_message(city):
         return '\n'.join(lines)
     except:
         return "Произошла ошибка! Попробуйте ещё раз."
+
+
+def enter_weather_state(message):
+    set_bot_state(message, BotStates.weather)
+    bot.send_message(message.chat.id,
+                     text="Введите город, в котором хотите увидеть погоду.",
+                     reply_markup=cancel_keyboard)

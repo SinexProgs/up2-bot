@@ -1,4 +1,5 @@
 import random
+from bot import *
 
 
 def get_random_number():
@@ -13,3 +14,16 @@ def get_guess_state_and_message(current_guess, thought_number):
         return False, f"Меньше чем <b>{current_guess}</b>"
     else:
         return False, f"Больше чем <b>{current_guess}</b>"
+
+
+def enter_game_guess_number_state(message):
+    set_bot_state(message, BotStates.game_guess_number)
+
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data["thought_number"] = game_guess_number.get_random_number()
+
+    bot.send_message(message.chat.id,
+                     text="Поиграем в игру ''Угадай число''. Я загадал число от 1 до 100. Твоя задача - " \
+                          "попытаться отгадать его. С каждым неверным числом я буду говорить: больше загаданное " \
+                          "мною число или меньше. Начнём, пиши своё число.",
+                     reply_markup=guess_number_keyboard)

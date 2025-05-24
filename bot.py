@@ -2,7 +2,6 @@ import telebot
 from bot_states import BotStates, BotStateNames
 from telebot import custom_filters, types, StateMemoryStorage
 import currency_converter, weather, password_generator, game_guess_number, qr_code_generator, random_dog_pic
-import random
 
 
 token = "7628109233:AAHJm70FOsEUpu6RKRfUj_st2PzG8WgFDAk"
@@ -24,19 +23,6 @@ random_pic_keyboard.add(types.KeyboardButton("Ещё картинку"),
                           types.KeyboardButton("Вернуться в меню"))
 
 
-def send_dog_pic(message):
-    try:
-        if random.randint(1, 20) <= 1:
-            bot.send_video(message.chat.id, caption="GORP", video=open("gorp.mp4", "rb"), reply_markup=random_pic_keyboard)
-        else:
-            image_url = random_dog_pic.get_dog_image()
-            bot.send_photo(message.chat.id, photo=image_url, reply_markup=random_pic_keyboard)
-    except:
-        bot.send_message(message.chat.id,
-                         text="Произошла ошибка! Попробуйте ещё раз.",
-                         reply_markup=cancel_keyboard)
-
-
 def set_bot_state(message, state):
     bot.set_state(message.from_user.id, state, message.chat.id)
 
@@ -47,54 +33,6 @@ def enter_menu_state(message):
                      text="<b>Random Toolbox Bot</b>\n\nВыберите одну из кнопок в меню.",
                      parse_mode="HTML",
                      reply_markup=menu_keyboard)
-
-
-def enter_currency_converter_state(message):
-    set_bot_state(message, BotStates.currency_converter)
-    bot.send_message(message.chat.id,
-                     text="Введите сумму и коды валют через пробел: сколько, из какой валюты, в какую.\n\nПример:\n" \
-                          "<b>1 USD RUB</b> - 1 доллар в рублях.",
-                     parse_mode="HTML",
-                     reply_markup=cancel_keyboard)
-
-
-def enter_weather_state(message):
-    set_bot_state(message, BotStates.weather)
-    bot.send_message(message.chat.id,
-                     text="Введите город, в котором хотите увидеть погоду.",
-                     reply_markup=cancel_keyboard)
-
-
-def enter_password_generator_state(message):
-    set_bot_state(message, BotStates.password_generator)
-    bot.send_message(message.chat.id,
-                     text="Введите длину пароля.",
-                     reply_markup=cancel_keyboard)
-
-
-def enter_qr_code_generator_state(message):
-    set_bot_state(message, BotStates.qr_code_generator)
-    bot.send_message(message.chat.id,
-                     text="Введите текст для преобразования в QR код.",
-                     reply_markup=cancel_keyboard)
-
-
-def enter_game_guess_number_state(message):
-    set_bot_state(message, BotStates.game_guess_number)
-
-    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-        data["thought_number"] = game_guess_number.get_random_number()
-
-    bot.send_message(message.chat.id,
-                     text="Поиграем в игру ''Угадай число''. Я загадал число от 1 до 100. Твоя задача - " \
-                          "попытаться отгадать его. С каждым неверным числом я буду говорить: больше загаданное " \
-                          "мною число или меньше. Начнём, пиши своё число.",
-                     reply_markup=guess_number_keyboard)
-
-
-def enter_random_dog_pic_state(message):
-    set_bot_state(message, BotStates.random_dog_pic)
-    send_dog_pic(message)
 
 
 def try_cancel_message(message):
@@ -113,12 +51,12 @@ def send_welcome_message(message):
 def handle_menu_message(message):
     try:
         match BotStateNames(message.text):
-            case BotStateNames.currency_converter: enter_currency_converter_state(message)
-            case BotStateNames.weather: enter_weather_state(message)
-            case BotStateNames.password_generator: enter_password_generator_state(message)
-            case BotStateNames.qr_code_generator: enter_qr_code_generator_state(message)
-            case BotStateNames.game_guess_number: enter_game_guess_number_state(message)
-            case BotStateNames.random_dog_pic: enter_random_dog_pic_state(message)
+            case BotStateNames.currency_converter: currency_converter.enter_currency_converter_state(message)
+            case BotStateNames.weather: weather.enter_weather_state(message)
+            case BotStateNames.password_generator: password_generator.enter_password_generator_state(message)
+            case BotStateNames.qr_code_generator: qr_code_generator.enter_qr_code_generator_state(message)
+            case BotStateNames.game_guess_number: game_guess_number.enter_game_guess_number_state(message)
+            case BotStateNames.random_dog_pic: random_dog_pic.enter_random_dog_pic_state(message)
     except:
         bot.send_message(message.chat.id,
                          text="Такой команды нет! Используйте меню для выбора.",
@@ -230,7 +168,7 @@ def handle_random_dog_pic_message(message):
     if try_cancel_message(message): return
 
     if message.text == "Ещё картинку":
-        send_dog_pic(message)
+        random_dog_pic.send_dog_pic(message)
     else:
         bot.send_message(message.chat.id,
                          text="Такой команды нет! Используйте меню для выбора.",
