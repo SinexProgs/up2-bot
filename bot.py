@@ -37,7 +37,6 @@ def send_dog_pic(message):
                          reply_markup=cancel_keyboard)
 
 
-
 def set_bot_state(message, state):
     bot.set_state(message.from_user.id, state, message.chat.id)
 
@@ -96,7 +95,6 @@ def enter_game_guess_number_state(message):
 def enter_random_dog_pic_state(message):
     set_bot_state(message, BotStates.random_dog_pic)
     send_dog_pic(message)
-
 
 
 def try_cancel_message(message):

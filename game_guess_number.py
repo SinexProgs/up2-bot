@@ -1,7 +1,9 @@
 import random
 
+
 def get_random_number():
     return random.randint(1, 100)
+
 
 def get_guess_state_and_message(current_guess, thought_number):
     if current_guess == thought_number:
