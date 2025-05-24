@@ -1,7 +1,8 @@
 import telebot
 from bot_states import BotStates, BotStateNames
 from telebot import custom_filters, types, StateMemoryStorage
-import currency_converter, weather, password_generator, game_guess_number
+import currency_converter, weather, password_generator, game_guess_number, qr_code_generator, random_dog_pic
+import random
 
 
 token = "7628109233:AAHJm70FOsEUpu6RKRfUj_st2PzG8WgFDAk"
@@ -17,6 +18,24 @@ cancel_keyboard.add(types.KeyboardButton("Вернуться в меню"))
 guess_number_keyboard = types.ReplyKeyboardMarkup(row_width=2)
 guess_number_keyboard.add(types.KeyboardButton("Сдаюсь"),
                           types.KeyboardButton("Вернуться в меню"))
+
+random_pic_keyboard = types.ReplyKeyboardMarkup(row_width=2)
+random_pic_keyboard.add(types.KeyboardButton("Ещё картинку"),
+                          types.KeyboardButton("Вернуться в меню"))
+
+
+def send_dog_pic(message):
+    try:
+        if random.randint(1, 20) <= 1:
+            bot.send_video(message.chat.id, caption="GORP", video=open("gorp.mp4", "rb"), reply_markup=random_pic_keyboard)
+        else:
+            image_url = random_dog_pic.get_dog_image()
+            bot.send_photo(message.chat.id, photo=image_url, reply_markup=random_pic_keyboard)
+    except:
+        bot.send_message(message.chat.id,
+                         text="Произошла ошибка! Попробуйте ещё раз.",
+                         reply_markup=cancel_keyboard)
+
 
 
 def set_bot_state(message, state):
@@ -54,6 +73,13 @@ def enter_password_generator_state(message):
                      reply_markup=cancel_keyboard)
 
 
+def enter_qr_code_generator_state(message):
+    set_bot_state(message, BotStates.qr_code_generator)
+    bot.send_message(message.chat.id,
+                     text="Введите текст для преобразования в QR код.",
+                     reply_markup=cancel_keyboard)
+
+
 def enter_game_guess_number_state(message):
     set_bot_state(message, BotStates.game_guess_number)
 
@@ -62,9 +88,15 @@ def enter_game_guess_number_state(message):
 
     bot.send_message(message.chat.id,
                      text="Поиграем в игру ''Угадай число''. Я загадал число от 1 до 100. Твоя задача - " \
-                          "попытаться отгадать его. С каждым неверным числом я буду говорить: больше загаданное мною " \
-                          "число или меньше. Начнём, пиши своё число.",
+                          "попытаться отгадать его. С каждым неверным числом я буду говорить: больше загаданное " \
+                          "мною число или меньше. Начнём, пиши своё число.",
                      reply_markup=guess_number_keyboard)
+
+
+def enter_random_dog_pic_state(message):
+    set_bot_state(message, BotStates.random_dog_pic)
+    send_dog_pic(message)
+
 
 
 def try_cancel_message(message):
@@ -86,7 +118,9 @@ def handle_menu_message(message):
             case BotStateNames.currency_converter: enter_currency_converter_state(message)
             case BotStateNames.weather: enter_weather_state(message)
             case BotStateNames.password_generator: enter_password_generator_state(message)
+            case BotStateNames.qr_code_generator: enter_qr_code_generator_state(message)
             case BotStateNames.game_guess_number: enter_game_guess_number_state(message)
+            case BotStateNames.random_dog_pic: enter_random_dog_pic_state(message)
     except:
         bot.send_message(message.chat.id,
                          text="Такой команды нет! Используйте меню для выбора.",
@@ -146,6 +180,21 @@ def handle_password_generator_message(message):
                          reply_markup=cancel_keyboard)
 
 
+@bot.message_handler(state=BotStates.qr_code_generator, func=lambda message: True)
+def handle_qr_code_message(message):
+    if try_cancel_message(message): return
+
+    try:
+        bot.send_photo(message.chat.id,
+                       photo=qr_code_generator.generate_qr_code(message.text),
+                       caption="Вот QR код для вашего текста.\n\nЕсли хотите сгенерировать ещё один QR код введите " \
+                               "текст для него.")
+    except:
+        bot.send_message(message.chat.id,
+                         text="Произошла ошибка! Попробуйте ещё раз.",
+                         reply_markup=cancel_keyboard)
+
+
 @bot.message_handler(state=BotStates.game_guess_number, func=lambda message: True)
 def handle_game_guess_number_message(message):
     if try_cancel_message(message): return
@@ -178,7 +227,16 @@ def handle_game_guess_number_message(message):
                                  reply_markup=guess_number_keyboard)
 
 
+@bot.message_handler(state=BotStates.random_dog_pic, func=lambda message: True)
+def handle_random_dog_pic_message(message):
+    if try_cancel_message(message): return
 
+    if message.text == "Ещё картинку":
+        send_dog_pic(message)
+    else:
+        bot.send_message(message.chat.id,
+                         text="Такой команды нет! Используйте меню для выбора.",
+                         reply_markup=random_pic_keyboard)
 
 
 bot.add_custom_filter(custom_filters.StateFilter(bot))
