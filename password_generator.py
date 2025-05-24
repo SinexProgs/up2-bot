@@ -1,6 +1,6 @@
 import random
 import string
-from bot import *
+import bot
 
 
 def generate_password(length):
@@ -17,7 +17,7 @@ def get_password_generator_message(length):
 
 
 def enter_password_generator_state(message):
-    set_bot_state(message, BotStates.password_generator)
-    bot.send_message(message.chat.id,
-                     text="Введите длину пароля.",
-                     reply_markup=cancel_keyboard)
+    bot.set_bot_state(message, bot.BotStates.password_generator)
+    bot.bot.send_message(message.chat.id,
+                         text="Введите длину пароля.",
+                         reply_markup=bot.cancel_keyboard)

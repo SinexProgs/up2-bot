@@ -1,6 +1,6 @@
 from io import BytesIO
 import qrcode
-from bot import *
+import bot
 
 
 def generate_qr_code(text):
@@ -16,7 +16,7 @@ def generate_qr_code(text):
 
 
 def enter_qr_code_generator_state(message):
-    set_bot_state(message, BotStates.qr_code_generator)
-    bot.send_message(message.chat.id,
-                     text="Введите текст для преобразования в QR код.",
-                     reply_markup=cancel_keyboard)
+    bot.set_bot_state(message, bot.BotStates.qr_code_generator)
+    bot.bot.send_message(message.chat.id,
+                         text="Введите текст для преобразования в QR код.",
+                         reply_markup=bot.cancel_keyboard)

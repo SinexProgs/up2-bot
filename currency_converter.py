@@ -1,6 +1,6 @@
 import json
 import requests
-from bot import *
+import bot
 
 
 def convert_currency(in_currency, out_currency, value):
@@ -24,9 +24,9 @@ def get_converted_currency_message(in_currency, out_currency, value):
 
 
 def enter_currency_converter_state(message):
-    set_bot_state(message, BotStates.currency_converter)
-    bot.send_message(message.chat.id,
-                     text="Введите сумму и коды валют через пробел: сколько, из какой валюты, в какую.\n\nПример:\n" \
-                          "<b>1 USD RUB</b> - 1 доллар в рублях.",
-                     parse_mode="HTML",
-                     reply_markup=cancel_keyboard)
+    bot.set_bot_state(message, bot.BotStates.currency_converter)
+    bot.bot.send_message(message.chat.id,
+                         text="Введите сумму и коды валют через пробел: сколько, из какой валюты, в какую.\n\n" \
+                              "Пример:\n<b>1 USD RUB</b> - 1 доллар в рублях.",
+                         parse_mode="HTML",
+                         reply_markup=bot.cancel_keyboard)

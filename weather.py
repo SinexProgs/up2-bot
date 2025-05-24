@@ -1,7 +1,7 @@
 import datetime
 import json
 import requests
-from bot import *
+import bot
 
 
 api = 'aef454789ee3d0bad82fee47b0613904'
@@ -70,7 +70,7 @@ def get_weather_message(city):
 
 
 def enter_weather_state(message):
-    set_bot_state(message, BotStates.weather)
-    bot.send_message(message.chat.id,
-                     text="Введите город, в котором хотите увидеть погоду.",
-                     reply_markup=cancel_keyboard)
+    bot.set_bot_state(message, bot.BotStates.weather)
+    bot.bot.send_message(message.chat.id,
+                         text="Введите город, в котором хотите увидеть погоду.",
+                         reply_markup=bot.cancel_keyboard)
